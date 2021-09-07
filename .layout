@@ -1,0 +1,66 @@
+{
+  "children": [
+    {
+      "type": "file",
+      "name": "META6.json"
+    },
+    {
+      "type": "file",
+      "name": "Changes"
+    },
+    {
+      "name": "LICENCE",
+      "type": "file"
+    },
+    {
+      "name": "t",
+      "purpose": null,
+      "children": [
+        {
+          "name": "030-request.t",
+          "type": "file"
+        },
+        {
+          "name": "040-refresh.t",
+          "type": "file"
+        },
+        {
+          "type": "file",
+          "name": "020-creds.t"
+        },
+        {
+          "children": [
+            {
+              "type": "file",
+              "name": "creds.json"
+            }
+          ],
+          "purpose": null,
+          "name": "data",
+          "type": "directory"
+        },
+        {
+          "name": "001-meta.t",
+          "type": "file"
+        }
+      ],
+      "type": "directory"
+    },
+    {
+      "name": "lib",
+      "purpose": null,
+      "type": "directory",
+      "children": [
+        {
+          "name": "Kivuli.rakumod",
+          "type": "file"
+        }
+      ]
+    },
+    {
+      "name": "README.md",
+      "type": "file"
+    }
+  ],
+  "type": "layout"
+}
