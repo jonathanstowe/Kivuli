@@ -2,6 +2,8 @@
 
 Get AWS IAM role credentials in EC2
 
+[![CI](https://github.com/jonathanstowe/Kivuli/actions/workflows/main.yml/badge.svg)](https://github.com/jonathanstowe/Kivuli/actions/workflows/main.yml)
+
 ## Synopsis
 
 ```raku
