@@ -23,21 +23,42 @@ my $http-client = mocked(Cro::HTTP::Client, returning => {
     put =>  Promise.kept( $put-response )
 });
 
-my $kivuli;
+subtest {
+    my $kivuli;
 
-lives-ok { $kivuli = Kivuli.new(:$http-client, role-name => 'my-test-role', :environment, :refresh) }, "create kivuli object";
+    lives-ok { $kivuli = Kivuli.new(:$http-client, role-name => 'my-test-role', :environment, :refresh) }, "create kivuli object";
 
-my %creds = from-json($creds);
+    my %creds = from-json($creds);
 
-is $kivuli.access-key-id, %creds<AccessKeyId>, "access-key-id";
-is $kivuli.secret-access-key, %creds<SecretAccessKey>, "secret-access-key";
-is $kivuli.token, %creds<Token>, "token";
+    is $kivuli.access-key-id, %creds<AccessKeyId>, "access-key-id";
+    is $kivuli.secret-access-key, %creds<SecretAccessKey>, "secret-access-key";
+    is $kivuli.token, %creds<Token>, "token";
 
-lives-ok { $kivuli.set-environment }, 'Set environment';
+    lives-ok { $kivuli.set-environment }, 'Set environment';
 
-is %*ENV<AWS_ACCESS_KEY_ID>, %creds<AccessKeyId>, "AWS_ACCESS_KEY_ID";
-is %*ENV<AWS_SECRET_ACCESS_KEY>, %creds<SecretAccessKey>, "AWS_SECRET_ACCESS_KEY";
-is %*ENV<AWS_SESSION_TOKEN>, %creds<Token>, "AWS_SESSION_TOKEN";
+    is %*ENV<AWS_ACCESS_KEY_ID>, %creds<AccessKeyId>, "AWS_ACCESS_KEY_ID";
+    is %*ENV<AWS_SECRET_ACCESS_KEY>, %creds<SecretAccessKey>, "AWS_SECRET_ACCESS_KEY";
+    is %*ENV<AWS_SESSION_TOKEN>, %creds<Token>, "AWS_SESSION_TOKEN";
+}, 'with API token';
+subtest {
+    my $kivuli;
+
+    lives-ok { $kivuli = Kivuli.new(:$http-client, role-name => 'my-test-role', :no-api-token, :environment, :refresh) }, "create kivuli object";
+
+    my %creds = from-json($creds);
+
+    is $kivuli.access-key-id, %creds<AccessKeyId>, "access-key-id";
+    is $kivuli.secret-access-key, %creds<SecretAccessKey>, "secret-access-key";
+    is $kivuli.token, %creds<Token>, "token";
+    ok !(await $kivuli.get-token).defined, "get-token returns undefined with :no-api-token";
+
+    lives-ok { $kivuli.set-environment }, 'Set environment';
+
+    is %*ENV<AWS_ACCESS_KEY_ID>, %creds<AccessKeyId>, "AWS_ACCESS_KEY_ID";
+    is %*ENV<AWS_SECRET_ACCESS_KEY>, %creds<SecretAccessKey>, "AWS_SECRET_ACCESS_KEY";
+    is %*ENV<AWS_SESSION_TOKEN>, %creds<Token>, "AWS_SESSION_TOKEN";
+}, 'without API token';
+
 
 done-testing;
 # vim: ft=raku

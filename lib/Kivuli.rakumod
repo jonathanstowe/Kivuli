@@ -49,6 +49,10 @@ If an attempt to retrieve the credentials fails (e.g. you are running this on so
 or you are running on EC2 but no IAM role has been associated with the EC2 instance,) then an exception will
 be thrown.
 
+If you are using this in an ElasticBeanstalk instance rather than directly on EC2 then you will need to use
+the C<:no-api-token> switch to the constructor, this will suppress the attempt to get a temporary session
+token which appears not to work in the EB Docker container.
+
 =head2 METHODS
 
 =end pod
@@ -85,6 +89,10 @@ class Kivuli {
         $!role-name //= await $.get-role-name;
 
     }
+
+    #| If set to true on the constructor, the temporary api token will not be
+    #| retrieved and will not be sent in the headers of subsequent requests
+    has Bool $.no-api-token = False;
 
     #| If set to true at the constructor will set the appropriate environment
     #| variables.
@@ -125,13 +133,20 @@ class Kivuli {
 
     #| Returns a Promise which will be kept with the AWS token to be used for the credentials request
     #| This is probably not useful in user code as the token can only be used in a subsequent credential
-    #| request.
+    #| request. If ':no-api-token' was provided to the constructor, this will be an undefined Str - the
+    #| consuming code should not use it in that case.
     method get-token( --> Promise ) {
         (supply {
-            whenever self.put("api/token", headers => [ X-aws-ec2-metadata-token-ttl-seconds => $.token-ttl-seconds ] ) -> $r {
-                whenever $r.body-text -> $token {
-                    emit $token;
-                    done;
+            if $!no-api-token {
+                emit Str;
+                done;
+            }
+            else {
+                whenever self.put("api/token", headers => [ X-aws-ec2-metadata-token-ttl-seconds => $.token-ttl-seconds ] ) -> $r {
+                    whenever $r.body-text -> $token {
+                        emit $token;
+                        done;
+                    }
                 }
             }
         }).Promise;
@@ -142,7 +157,7 @@ class Kivuli {
     method get-credentials( --> Promise ) {
         ( supply {
             whenever self.get-token() -> $token {
-                whenever self.get("meta-data/iam/security-credentials/" ~ self.role-name, headers => [ X-aws-ec2-metadata-token => $token ] ) -> $r {
+                whenever self.get("meta-data/iam/security-credentials/" ~ self.role-name, |(headers => [ X-aws-ec2-metadata-token => $_ ] with $token )) -> $r {
                     whenever $r.body-text -> $body {
                         my $creds = Credentials.from-json($body);
                         if $.refresh {
@@ -167,7 +182,7 @@ class Kivuli {
     method get-role-name( --> Promise ) {
         ( supply {
             whenever self.get-token() -> $token {
-                whenever self.get("meta-data/iam/security-credentials", headers => [ X-aws-ec2-metadata-token => $token ] ) -> $r {
+                whenever self.get("meta-data/iam/security-credentials", |(headers => [ X-aws-ec2-metadata-token => $_ ] with $token ) ) -> $r {
                     whenever $r.body-text -> $body {
                         emit $body;
                         done;
