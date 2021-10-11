@@ -14,7 +14,7 @@ use Kivuli;
 use WebService::AWS::S3;
 
 my $k = Kivuli.new(role-name => 'my-iam-role');
-my $s3 = WebService::AWS::S3.new(secret-access-key => $k.secret-access-key, access-key-id => $k.access-key-id, region => 'eu-west-2');
+my $s3 = WebService::AWS::S3.new(secret-access-key => $k.secret-access-key, access-key-id => $k.access-key-id, security-token => $k.token, region => 'eu-west-2');
 
 # Do something with the S3
 
@@ -26,9 +26,12 @@ my $s3 = WebService::AWS::S3.new(secret-access-key => $k.secret-access-key, acce
 
 This module enables access to AWS IAM role credentials from within an EC2 instance as [described here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html).
 
-The credentials supplied ( `AWS_ACCES_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,) can be used to authenticate with another AWS service that the role has been granted access to.
+The credentials supplied ( `AWS_ACCES_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`) can be used to authenticate with another AWS service that the role has been granted access to.
 
 Because the credentials are supplied in a way that is private to the EC2 instance this is a more secure method of obtaining the credentials than, for example, putting them in a configuration file.
+
+The `token` **must** be supplied in the headers (or as a query parameter,) for requests to the service, however some services differ as to whether it should or shouldn't be part of the
+signed headers in the request - please see the documentation for the service you are implementing for details.
 
 ## Installation
 

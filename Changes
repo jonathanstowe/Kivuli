@@ -1,3 +1,5 @@
+v0.0.3		Mon 11 Oct 14:39:25 BST 2021
+	* Update synopsis and documentation regarding the security token
 v0.0.2		Fri  8 Oct 15:37:21 BST 2021
 	* Add :no-api-token to constructor to suppress requesting temporary api token
 v0.0.1		Tue  7 Sep 21:27:28 BST 2021
